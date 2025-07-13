@@ -40,7 +40,7 @@ const handleSignIn = async () => {
       return await verifyOtp();
     }
     
-    const response = await axios.post("http://127.0.0.1:8000/api/auth/auditor-login", {
+    const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/auditor-login", {
       email: email.value,
       password: password.value,
     });
@@ -181,7 +181,7 @@ const verifyOtp = async () => {
     
     console.log("Sending 2FA verification data:", verificationData); // Debug log
     
-    const response = await axios.post("http://127.0.0.1:8000/api/auth/verify-2fa", verificationData);
+    const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/verify-2fa", verificationData);
 
     console.log("2FA verification response:", response.data); // Debug log
 

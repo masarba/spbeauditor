@@ -551,7 +551,7 @@ export default {
         if (!await this.checkAuth()) return;
         
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/auth/audit-requests/pending"
+          "https://spbebackend-production.up.railway.app/api/auth/audit-requests/pending"
         );
 
         // Ambil daftar audit yang sudah selesai dari localStorage
@@ -575,7 +575,7 @@ export default {
         if (!await this.checkAuth()) return;
         
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/auth/audit-requests/answered"
+          "https://spbebackend-production.up.railway.app/api/auth/audit-requests/answered"
         );
 
         // Ambil daftar audit yang sudah selesai dari localStorage
@@ -665,7 +665,7 @@ export default {
               
               // Fallback ke metode normal jika metode raw gagal
               const additionalResponse = await axios.get(
-                `http://127.0.0.1:8000/api/auth/audit-requests/${audit.id}/additional-answers`,
+                `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${audit.id}/additional-answers`,
                 {
                   headers: {
                     'Authorization': `Bearer ${localStorage.getItem("token")}`,
@@ -756,7 +756,7 @@ export default {
         }
 
         const response = await axios.post(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${audit.id}/upload-signed-nda`,
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${audit.id}/upload-signed-nda`,
           formData,
           {
             headers: {
@@ -791,7 +791,7 @@ export default {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${audit.id}/download-nda-auditee`,
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${audit.id}/download-nda-auditee`,
           {
             responseType: 'blob',
             headers: {
@@ -828,7 +828,7 @@ export default {
         const token = localStorage.getItem("token");
         
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/auth/audits/${audit.id}/download-result`,
+          `https://spbebackend-production.up.railway.app/api/auth/audits/${audit.id}/download-result`,
           {
             responseType: 'blob',
             headers: {
@@ -901,7 +901,7 @@ export default {
 
         // Kirim request persetujuan dengan path signed_nda
         const response = await axios.patch(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${audit.id}/approve`,
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${audit.id}/approve`,
           {
             signed_nda: audit.signed_nda // Kirim path signed_nda yang sudah tersimpan
           },
@@ -939,7 +939,7 @@ export default {
         }
 
         await axios.patch(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${audit.id}/reject`,
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${audit.id}/reject`,
           {}
         );
 
@@ -976,7 +976,7 @@ export default {
 
         // Mengirim pertanyaan baru
         const submitResponse = await axios.post(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${auditId}/additional-questions`,
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${auditId}/additional-questions`,
           { questions }
         );
         
@@ -994,7 +994,7 @@ export default {
         
         // Ambil data pertanyaan tambahan terbaru (hanya yang baru ditambahkan)
         const additionalResponse = await axios.get(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${auditId}/additional-answers`
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${auditId}/additional-answers`
         );
         
         // Log response untuk debugging
@@ -1295,7 +1295,7 @@ export default {
               // Fallback ke metode normal
               // Ambil data terbaru dari server
               const response = await axios.get(
-                `http://127.0.0.1:8000/api/auth/audit-requests/${audit.id}/additional-answers`,
+                `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${audit.id}/additional-answers`,
                 {
                   headers: {
                     'Authorization': `Bearer ${localStorage.getItem("token")}`
@@ -1555,7 +1555,7 @@ export default {
         
         // Kirim jawaban ke API
         const response = await axios.post(
-          `http://127.0.0.1:8000/api/auth/audit-requests/${auditId}/submit-answers`,
+          `https://spbebackend-production.up.railway.app/api/auth/audit-requests/${auditId}/submit-answers`,
           { answers: answersData },
           {
             headers: {
@@ -2094,7 +2094,7 @@ export default {
 
         // Kirim jawaban ke API
         const response = await axios.post(
-          `http://127.0.0.1:8000/api/auth/submit-answers/${id}`,
+          `https://spbebackend-production.up.railway.app/api/auth/submit-answers/${id}`,
           { answers: answersToSend },
           {
             headers: {
@@ -2177,7 +2177,7 @@ export default {
       try {
         // Gunakan pendekatan fetch standar yang lebih sederhana
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://127.0.0.1:8000/api/auth/audit-requests/${auditId}/additional-answers`, {
+        const response = await fetch(`https://spbebackend-production.up.railway.app/api/auth/audit-requests/${auditId}/additional-answers`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

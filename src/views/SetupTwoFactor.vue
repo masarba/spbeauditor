@@ -43,7 +43,7 @@
   
   onMounted(async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/auth/setup-2fa", {}, {
+      const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/setup-2fa", {}, {
         headers: {
           Authorization: `Bearer ${store.state.token}`,
         },
@@ -89,7 +89,7 @@
       }
   
       // Make the API call to verify 2FA
-      const response = await axios.post("http://127.0.0.1:8000/api/auth/verify-2fa", {
+      const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/verify-2fa", {
         otp: verificationCode.value,
         google2fa_secret: secret.value, // Include the google2fa_secret in the request
       }, {
@@ -173,4 +173,4 @@
     background-color: #218838;
   }
   </style>
-  
+  ``

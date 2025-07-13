@@ -84,7 +84,7 @@
           this.isLoading = true;
           
           // Call new verify endpoint with email instead of token
-          const response = await axios.post("http://127.0.0.1:8000/api/auth/verify-2fa", {
+          const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/verify-2fa", {
             otp: this.otpCode,
             email: this.userEmail
           });
