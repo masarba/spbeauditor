@@ -37,12 +37,54 @@
   const verificationCode = ref('');
   const qrCanvas = ref(null);
   const secret = ref('');
+  const userEmail = ref(''); // Add a ref for user email
   const $q = useQuasar();
   const router = useRouter();
   const store = useStore();
   
   onMounted(async () => {
     try {
+      // First, fetch user data to get email
+      try {
+        const userResponse = await axios.get("https://spbebackend-production.up.railway.app/api/auth/user", {
+          headers: {
+            Authorization: `Bearer ${store.state.token}`,
+          },
+        });
+        
+        // Store the email
+        if (userResponse.data && userResponse.data.email) {
+          userEmail.value = userResponse.data.email;
+          // Also store in localStorage for future use
+          localStorage.setItem('user_email', userResponse.data.email);
+          console.log("User email fetched:", userEmail.value);
+        } else {
+          console.error("User email not found in response:", userResponse.data);
+        }
+      } catch (userError) {
+        console.error("Error fetching user data:", userError);
+        // If the /user endpoint fails, try getting email from token
+        try {
+          const token = store.state.token;
+          if (token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const decodedToken = JSON.parse(jsonPayload);
+            if (decodedToken.email) {
+              userEmail.value = decodedToken.email;
+              localStorage.setItem('user_email', decodedToken.email);
+              console.log("Email extracted from token:", userEmail.value);
+            }
+          }
+        } catch (e) {
+          console.error("Error extracting email from token:", e);
+        }
+      }
+      
+      // Then proceed with 2FA setup
       const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/setup-2fa", {}, {
         headers: {
           Authorization: `Bearer ${store.state.token}`,
@@ -88,54 +130,29 @@
         return;
       }
       
-      // Try to get the user email from different sources
-      let userEmail = null;
-      
-      // Try from localStorage user_email
-      userEmail = localStorage.getItem('user_email');
-      
-      // If not found, try from user object in localStorage
-      if (!userEmail) {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          const user = JSON.parse(userData);
-          userEmail = user.email;
+      // Check if we have the email
+      if (!userEmail.value) {
+        // If the ref is empty, try to get from localStorage as fallback
+        const storedEmail = localStorage.getItem('user_email');
+        if (storedEmail) {
+          userEmail.value = storedEmail;
+        } else {
+          $q.notify({
+            message: "User email not found. Please try logging in again.",
+            type: "negative",
+            position: "top-right",
+          });
+          return;
         }
       }
       
-      // If still not found, try to decode from token
-      if (!userEmail) {
-        try {
-          const token = store.state.token;
-          if (token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            const decodedToken = JSON.parse(jsonPayload);
-            userEmail = decodedToken.email || null;
-          }
-        } catch (e) {
-          console.error("Error decoding token:", e);
-        }
-      }
-      
-      // If no email found, show error
-      if (!userEmail) {
-        $q.notify({
-          message: "User email not found. Please try logging in again.",
-          type: "negative",
-          position: "top-right",
-        });
-        return;
-      }
+      console.log("Verifying 2FA with email:", userEmail.value);
   
       // Make the API call to verify 2FA
       const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/verify-2fa", {
         otp: verificationCode.value,
         google2fa_secret: secret.value, // Include the google2fa_secret in the request
-        email: userEmail, // Include the email field
+        email: userEmail.value, // Include the email field
       }, {
         headers: {
           Authorization: `Bearer ${store.state.token}`, // Use the token from the store
