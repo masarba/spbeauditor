@@ -92,8 +92,11 @@
           // Save new token from response
           localStorage.setItem('token', response.data.access_token);
           localStorage.setItem('refresh_token', response.data.refresh_token);
+          localStorage.setItem('is2FAVerified', 'true'); // Set 2FA verification status
           localStorage.removeItem('user_email'); // Clean up
-          localStorage.removeItem('redirect_to'); // Clean up
+          
+          // Update the Vuex store
+          this.$store.dispatch('verify2FAStatus', true);
           
           this.$q.notify({
             message: "Verification successful!",
@@ -101,7 +104,15 @@
             position: "top-right"
           });
           
-          this.$router.push("/dashboard");
+          // Check if there's a redirect_to destination
+          const redirectTo = localStorage.getItem('redirect_to');
+          if (redirectTo) {
+            const redirectPath = redirectTo;
+            localStorage.removeItem('redirect_to'); // Clean up
+            this.$router.push(redirectPath);
+          } else {
+            this.$router.push("/dashboard");
+          }
         } catch (error) {
           console.error("Verification error:", error);
           this.$q.notify({

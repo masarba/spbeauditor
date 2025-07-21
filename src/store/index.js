@@ -22,6 +22,7 @@ export default createStore({
     isLoggedIn: !!localStorage.getItem("token"), // Check if token exists
     token: localStorage.getItem("token"), // Load token from localStorage
     role: localStorage.getItem("role") || null, // Load role from localStorage
+    is2FAVerified: localStorage.getItem("is2FAVerified") === "true" || false, // 2FA verification status
     kerentanans: [],  // Store the list of kerentanan (vulnerabilities)
     kerentanan: null,  // Store details of a single kerentanan
   },
@@ -54,12 +55,18 @@ export default createStore({
       localStorage.setItem("token", token); // Save token to localStorage
       localStorage.setItem("role", role); // Save role to localStorage
     },
+    set2FAVerified(state, status) {
+      state.is2FAVerified = status;
+      localStorage.setItem("is2FAVerified", status);
+    },
     logout(state) {
       state.isLoggedIn = false; // Set login status to false
       state.token = null; // Clear JWT token
       state.role = null; // Clear role
+      state.is2FAVerified = false; // Reset 2FA status
       localStorage.removeItem("token"); // Remove token from localStorage
       localStorage.removeItem("role"); // Remove role from localStorage
+      localStorage.removeItem("is2FAVerified"); // Remove 2FA status from localStorage
     },
     // Mutations for kerentanan
     setKerentanans(state, kerentanans) {
@@ -72,6 +79,9 @@ export default createStore({
   actions: {
     login({ commit }, { token, role }) {
       commit("setLogin", { token, role }); // Commit login mutation
+    },
+    verify2FAStatus({ commit }, status) {
+      commit("set2FAVerified", status);
     },
     logout({ commit }) {
       commit("logout"); // Commit logout mutation
@@ -123,6 +133,7 @@ export default createStore({
   },
   getters: {
     isAuthenticated: (state) => state.isLoggedIn, // Return login status
+    is2FAVerified: (state) => state.is2FAVerified, // Return 2FA verification status
     userRole: (state) => state.role, // Return the role of the user
     isAdmin: (state) => state.role === "admin", // Check if user is admin
     isUser: (state) => state.role === "user", // Check if user is a regular user

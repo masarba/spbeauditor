@@ -99,12 +99,15 @@
       });
   
       if (response.status === 200) {
+        // Set 2FA verification status in store
+        store.dispatch('verify2FAStatus', true);
+        
         $q.notify({
           message: "Two-factor authentication setup successfully!",
           type: "positive",
           position: "top-right",
         });
-        router.push("/dashboard-default"); // Redirect to the dashboard
+        router.push("/dashboard"); // Redirect to the dashboard
       }
     } catch (error) {
       console.error("Error verifying 2FA:", error);

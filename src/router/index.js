@@ -82,6 +82,7 @@ const router = createRouter({
 // Navigation guard to check authentication and redirect accordingly
 router.beforeEach((to, from, next) => {
   const isAuthenticated = store.getters.isAuthenticated;
+  const is2FAVerified = store.getters.is2FAVerified;
   const token = store.state.token;
   // Tambahkan variabel redirect_to dari localStorage
   const redirectTo = localStorage.getItem('redirect_to');
@@ -98,6 +99,13 @@ router.beforeEach((to, from, next) => {
       store.dispatch("logout");
       return next("/auditor-login");
     }
+  }
+  
+  // Check 2FA requirements - redirect to setup if accessing a protected route without 2FA verification
+  if (to.meta.requiresCompleted2FA && isAuthenticated && !is2FAVerified) {
+    // Save the intended destination for after 2FA setup
+    localStorage.setItem('redirect_to', to.fullPath);
+    return next('/setup-2fa');
   }
 
   // Jika halaman membutuhkan autentikasi dan pengguna tidak terautentikasi
@@ -116,10 +124,11 @@ router.beforeEach((to, from, next) => {
     return next("/dashboard");
   }
 
-  // Handle 2FA requirements
-  if (to.meta.requiresCompleted2FA && redirectTo) {
-    // Jika halaman memerlukan 2FA lengkap tapi ada redirect yang tertunda
-    return next(redirectTo);
+  // Check if we need to redirect after 2FA setup is complete
+  if (is2FAVerified && redirectTo && to.path === '/setup-2fa') {
+    const redirectPath = redirectTo;
+    localStorage.removeItem('redirect_to'); // Hapus setelah digunakan
+    return next(redirectPath);
   }
 
   next();

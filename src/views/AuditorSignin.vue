@@ -125,6 +125,29 @@ const handleSignIn = async () => {
     store.dispatch("login", { token, role: userRole });
     localStorage.setItem("auditor_id", auditorId.toString());
 
+    // Check 2FA status
+    try {
+      const twoFAResponse = await axios.get("https://spbebackend-production.up.railway.app/api/auth/check-2fa-status", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // If 2FA is enabled and verified, set the status in the store
+      if (twoFAResponse.data.is_2fa_enabled && twoFAResponse.data.is_2fa_verified) {
+        store.dispatch("verify2FAStatus", true);
+      } else {
+        // If 2FA is not verified, redirect to setup
+        store.dispatch("verify2FAStatus", false);
+        router.push("/setup-2fa");
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking 2FA status:", error);
+      // If there's an error, assume 2FA is not set up
+      store.dispatch("verify2FAStatus", false);
+      router.push("/setup-2fa");
+      return;
+    }
+
     $q.notify({
       message: "Login berhasil!",
       type: "positive",
@@ -195,6 +218,9 @@ const verifyOtp = async () => {
         token: newToken, 
         role: twoFAData.role 
       });
+      // Set 2FA verification status
+      store.dispatch("verify2FAStatus", true);
+      
       localStorage.setItem("auditor_id", twoFAData.auditorId.toString());
 
       $q.notify({

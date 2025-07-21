@@ -16,8 +16,26 @@ export const login = (email, password) => {
 
 export const logout = () => {
   localStorage.removeItem('user'); // Remove user data from localStorage
+  localStorage.removeItem('token');
+  localStorage.removeItem('is2FAVerified');
 };
 
 export const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem('user')); // Get current user from localStorage
+};
+
+// Function to check 2FA status from the server
+export const check2FAStatus = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return Promise.resolve(false);
+  
+  return axios.get(API_URL + 'check-2fa-status', {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(response => {
+    const is2FAEnabled = response.data.is_2fa_enabled;
+    localStorage.setItem('is2FAVerified', is2FAEnabled);
+    return is2FAEnabled;
+  }).catch(() => {
+    return false;
+  });
 };
