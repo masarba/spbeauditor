@@ -96,6 +96,9 @@ const handleSignIn = async () => {
         // User perlu setup 2FA
         store.dispatch("login", { token, role: userRole });
         localStorage.setItem("auditor_id", twoFAData.auditorId.toString());
+        // Store email in localStorage for 2FA setup
+        localStorage.setItem("user_email", email.value);
+        console.log("Storing email for 2FA setup:", email.value);
         router.push("/setup-2fa");
       }
       
@@ -137,6 +140,9 @@ const handleSignIn = async () => {
       } else {
         // If 2FA is not verified, redirect to setup
         store.dispatch("verify2FAStatus", false);
+        // Store email in localStorage for 2FA setup
+        localStorage.setItem("user_email", email.value);
+        console.log("Storing email for 2FA setup from 2FA check:", email.value);
         router.push("/setup-2fa");
         return;
       }
@@ -144,6 +150,9 @@ const handleSignIn = async () => {
       console.error("Error checking 2FA status:", error);
       // If there's an error, assume 2FA is not set up
       store.dispatch("verify2FAStatus", false);
+      // Store email in localStorage for 2FA setup
+      localStorage.setItem("user_email", email.value);
+      console.log("Storing email for 2FA setup after error:", email.value);
       router.push("/setup-2fa");
       return;
     }
