@@ -87,11 +87,55 @@
         });
         return;
       }
+      
+      // Try to get the user email from different sources
+      let userEmail = null;
+      
+      // Try from localStorage user_email
+      userEmail = localStorage.getItem('user_email');
+      
+      // If not found, try from user object in localStorage
+      if (!userEmail) {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          userEmail = user.email;
+        }
+      }
+      
+      // If still not found, try to decode from token
+      if (!userEmail) {
+        try {
+          const token = store.state.token;
+          if (token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const decodedToken = JSON.parse(jsonPayload);
+            userEmail = decodedToken.email || null;
+          }
+        } catch (e) {
+          console.error("Error decoding token:", e);
+        }
+      }
+      
+      // If no email found, show error
+      if (!userEmail) {
+        $q.notify({
+          message: "User email not found. Please try logging in again.",
+          type: "negative",
+          position: "top-right",
+        });
+        return;
+      }
   
       // Make the API call to verify 2FA
       const response = await axios.post("https://spbebackend-production.up.railway.app/api/auth/verify-2fa", {
         otp: verificationCode.value,
         google2fa_secret: secret.value, // Include the google2fa_secret in the request
+        email: userEmail, // Include the email field
       }, {
         headers: {
           Authorization: `Bearer ${store.state.token}`, // Use the token from the store
